@@ -1,0 +1,5 @@
+body { min-width: 500px; min-height: 375px; }
+.pointer, a:hover { cursor: pointer; }
+
+.content { padding: 20px; }   
+.error { color: red; }
