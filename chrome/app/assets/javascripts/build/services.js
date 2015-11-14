@@ -2,21 +2,13 @@
 (function() {
   var app;
 
-  app = angular.module("foodNetwork", ["ngAria", "ngAnimate", "ngMaterial", "ngMdIcons"]);
-
-  app.config(function($mdThemingProvider) {
-    return $mdThemingProvider.theme("default").primaryPalette("red").accentPalette("green");
-  });
-
-  app.constant("SERVER", "http://www.foodnetwork.com");
-
-  app.constant("EPISODES", "/videos/players/food-network-full-episodes.vc.html");
+  app = angular.module("foodNetwork.services", []);
 
   app.service("Channel", [
     "$http", "$q", "SERVER", "EPISODES", "$parse", function($http, $q, SERVER, EPISODES, $parse) {
       return {
         service: {
-          episodesList: function() {
+          programs: function() {
             var deferred;
             deferred = $q.defer();
             $http.get(SERVER + EPISODES).then(function(d) {
@@ -45,10 +37,10 @@
             });
             return deferred.promise;
           },
-          episodes: function(episodeItem) {
+          episodes: function(program) {
             var deferred;
             deferred = $q.defer();
-            $http.get(SERVER + episodeItem.url).then((function(_this) {
+            $http.get(SERVER + program.url).then((function(_this) {
               return function(d) {
                 var data, data2, data3, episode, episodes, item, json, scriptText, startIndex, stopIndex;
                 data = $(d.data).find("section#player-component");
@@ -57,9 +49,11 @@
                 scriptText = data3.text;
                 startIndex = scriptText.indexOf("{\"channels\":");
                 scriptText = scriptText.substr(startIndex);
-                stopIndex = scriptText.indexOf(",{\"extras\"");
+                stopIndex = scriptText.indexOf("}]}") + 3;
                 scriptText = scriptText.substr(0, stopIndex);
+                console.debug(scriptText);
                 json = JSON.parse(scriptText);
+                console.debug(json);
                 episodes = (function() {
                   var i, len, ref, results;
                   ref = json.channels[0].videos;
@@ -83,6 +77,9 @@
           },
           videos: function(episode) {
             var deferred;
+            console.debug("Channel.service.videos");
+            console.debug("-- source");
+            console.debug(episode);
             deferred = $q.defer();
             $http.get(episode.smil).then(function(d) {
               var _switch, _video, data, height, heightRe, i, index, j, len, len1, list, ref, ref1, src, srcRe, video, width, widthRe;
@@ -115,79 +112,6 @@
             return deferred.promise;
           }
         }
-      };
-    }
-  ]);
-
-  app.controller("appController", [
-    "$scope", "Channel", function($scope, Channel) {
-      var backToEpisodesList, resetLists, resetViews;
-      $scope.views = {
-        episodesList: true,
-        episodes: false
-      };
-      $scope.episodesList = null;
-      $scope.episodesItem = null;
-      $scope.episodes = null;
-      $scope.videos = null;
-      $scope.loading = true;
-      resetViews = function() {
-        return $scope.views = {
-          episodesList: true,
-          episodes: false
-        };
-      };
-      resetLists = function() {
-        $scope.episodesList = null;
-        $scope.episodesItem = null;
-        $scope.episodes = null;
-        return $scope.videos = null;
-      };
-      $scope.backToEpisodesList = function() {
-        return backToEpisodesList();
-      };
-      backToEpisodesList = function() {
-        $scope.loading = true;
-        resetViews();
-        resetLists();
-        return Channel.service.episodesList().then(function(episodesList) {
-          $scope.loading = false;
-          return $scope.episodesList = episodesList;
-        });
-      };
-      backToEpisodesList();
-      return $scope.goToEpisodes = function(episodeItem) {
-        $scope.loading = true;
-        $scope.views = {
-          episodesList: false,
-          episodes: true
-        };
-        $scope.episodeItem = episodeItem;
-        return Channel.service.episodes(episodeItem).then(function(episodes) {
-          $scope.loading = false;
-          return $scope.episodes = episodes;
-        });
-      };
-    }
-  ]);
-
-  app.directive("episodeVideos", [
-    function() {
-      return {
-        restrict: "E",
-        scope: {
-          episode: "="
-        },
-        transclude: true,
-        templateUrl: "videos.html",
-        controller: [
-          "$scope", "Channel", function($scope, Channel) {
-            $scope.videos = [];
-            return Channel.service.videos($scope.episode).then(function(videos) {
-              return $scope.videos = videos;
-            });
-          }
-        ]
       };
     }
   ]);
