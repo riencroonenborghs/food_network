@@ -41,7 +41,7 @@
         });
       };
       backToPrograms();
-      return $scope.goToProgram = function(program) {
+      return $scope.goToEpisodes = function(program) {
         $scope.loading = true;
         $scope.views = {
           programs: false,

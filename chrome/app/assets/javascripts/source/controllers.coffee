@@ -31,7 +31,7 @@ app.controller "appController", ["$scope", "Channel",
   backToPrograms()
 
   # episodes for program
-  $scope.goToProgram = (program) ->
+  $scope.goToEpisodes = (program) ->
     $scope.loading  = true
     $scope.views    = {programs: false, episodes: true}
     $scope.program  = program

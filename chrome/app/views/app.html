@@ -48,7 +48,7 @@
 
       <md-list ng-if="views.programs">
         <md-subheader ng-if="!loading"> {{programs.length}} Programs</md-subheader>
-        <md-list-item ng-repeat="program in programs" class="md-3-line pointer" ng-click="goToProgram(program)">
+        <md-list-item ng-repeat="program in programs" class="md-3-line pointer" ng-click="goToEpisodes(program)">
           <img ng-src="{{program.image}}" class="md-avatar" />
           <div class="md-list-item-text">
             <h3>{{program.name}}</h3>
