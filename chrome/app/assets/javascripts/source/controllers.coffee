@@ -1,41 +1,40 @@
-app = angular.module "foodNetwork.controllers", [
-  "foodNetwork.services"
+app = angular.module "foodNetwork.controllers", []
+
+app.controller "appController", ["$scope", "NavbarFactory", ($scope, NavbarFactory) ->
+  $scope.Navbar = new NavbarFactory
+  $scope.Navbar.addTitle "FoodNetwork"
+
+  $scope.search =
+    query: ""  
 ]
 
-app.controller "appController", ["$scope", "Channel",
-($scope, Channel) ->
-  $scope.views    = {programs: true, episodes: false}
-  $scope.programs = null
-  $scope.program  = null
-  $scope.episodes = null
-  $scope.videos   = null
+app.controller "ProgramsController", ["$scope", "$location", "FoodNetwork",
+($scope, $location, FoodNetwork) ->
+  $scope.Navbar.reset()
+  $scope.Navbar.addTitle "FoodNetwork"
+
   $scope.loading  = true
+  $scope.programs = []
 
-  resetViews = ->
-    $scope.views = {programs: true, episodes: false}
-  resetLists = ->
-    $scope.programs = null
-    $scope.program  = null
-    $scope.episodes = null
-    $scope.videos   = null
+  FoodNetwork.programs().then (programs) -> 
+    $scope.loading = false
+    $scope.programs = programs
 
-  # start with programs
-  $scope.backToPrograms = -> backToPrograms()
-  backToPrograms = ->
-    $scope.loading = true
-    resetViews()
-    resetLists()
-    Channel.service.programs().then (programs) -> 
-      $scope.loading = false
-      $scope.programs = programs
-  backToPrograms()
+  $scope.episodes = (program) -> $location.path "/episodes/#{program.name}/#{program.url}"
+]
 
-  # episodes for program
-  $scope.goToEpisodes = (program) ->
-    $scope.loading  = true
-    $scope.views    = {programs: false, episodes: true}
-    $scope.program  = program
-    Channel.service.episodes(program).then (episodes) -> 
-      $scope.loading = false
-      $scope.episodes = episodes
+app.controller "EpisodesController", ["$scope", "$location", "$routeParams", "FoodNetwork", "NavbarFactory",
+($scope, $location, $routeParams, FoodNetwork, NavbarFactory) ->  
+  name = $routeParams.name
+  $scope.Navbar.reset()
+  $scope.Navbar.addLink "/programs"
+  $scope.Navbar.addTitle name
+
+  url             = $routeParams.url
+  $scope.loading  = true
+  $scope.episodes = []
+
+  FoodNetwork.episodes(url).then (episodes) ->
+    $scope.loading = false
+    $scope.episodes = episodes
 ]

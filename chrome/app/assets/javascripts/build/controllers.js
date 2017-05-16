@@ -2,57 +2,48 @@
 (function() {
   var app;
 
-  app = angular.module("foodNetwork.controllers", ["foodNetwork.services"]);
+  app = angular.module("foodNetwork.controllers", []);
 
   app.controller("appController", [
-    "$scope", "Channel", function($scope, Channel) {
-      var backToPrograms, resetLists, resetViews;
-      $scope.views = {
-        programs: true,
-        episodes: false
+    "$scope", "NavbarFactory", function($scope, NavbarFactory) {
+      $scope.Navbar = new NavbarFactory;
+      $scope.Navbar.addTitle("FoodNetwork");
+      return $scope.search = {
+        query: ""
       };
-      $scope.programs = null;
-      $scope.program = null;
-      $scope.episodes = null;
-      $scope.videos = null;
+    }
+  ]);
+
+  app.controller("ProgramsController", [
+    "$scope", "$location", "FoodNetwork", function($scope, $location, FoodNetwork) {
+      $scope.Navbar.reset();
+      $scope.Navbar.addTitle("FoodNetwork");
       $scope.loading = true;
-      resetViews = function() {
-        return $scope.views = {
-          programs: true,
-          episodes: false
-        };
+      $scope.programs = [];
+      FoodNetwork.programs().then(function(programs) {
+        $scope.loading = false;
+        return $scope.programs = programs;
+      });
+      return $scope.episodes = function(program) {
+        return $location.path("/episodes/" + program.name + "/" + program.url);
       };
-      resetLists = function() {
-        $scope.programs = null;
-        $scope.program = null;
-        $scope.episodes = null;
-        return $scope.videos = null;
-      };
-      $scope.backToPrograms = function() {
-        return backToPrograms();
-      };
-      backToPrograms = function() {
-        $scope.loading = true;
-        resetViews();
-        resetLists();
-        return Channel.service.programs().then(function(programs) {
-          $scope.loading = false;
-          return $scope.programs = programs;
-        });
-      };
-      backToPrograms();
-      return $scope.goToEpisodes = function(program) {
-        $scope.loading = true;
-        $scope.views = {
-          programs: false,
-          episodes: true
-        };
-        $scope.program = program;
-        return Channel.service.episodes(program).then(function(episodes) {
-          $scope.loading = false;
-          return $scope.episodes = episodes;
-        });
-      };
+    }
+  ]);
+
+  app.controller("EpisodesController", [
+    "$scope", "$location", "$routeParams", "FoodNetwork", "NavbarFactory", function($scope, $location, $routeParams, FoodNetwork, NavbarFactory) {
+      var name, url;
+      name = $routeParams.name;
+      $scope.Navbar.reset();
+      $scope.Navbar.addLink("/programs");
+      $scope.Navbar.addTitle(name);
+      url = $routeParams.url;
+      $scope.loading = true;
+      $scope.episodes = [];
+      return FoodNetwork.episodes(url).then(function(episodes) {
+        $scope.loading = false;
+        return $scope.episodes = episodes;
+      });
     }
   ]);
 

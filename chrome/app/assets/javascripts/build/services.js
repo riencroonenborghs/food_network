@@ -4,115 +4,94 @@
 
   app = angular.module("foodNetwork.services", []);
 
-  app.service("Channel", [
-    "$http", "$q", "SERVER", "EPISODES", "$parse", function($http, $q, SERVER, EPISODES, $parse) {
-      return {
-        service: {
-          programs: function() {
-            var deferred;
-            deferred = $q.defer();
-            $http.get(SERVER + EPISODES).then(function(d) {
-              var _description, _img, _link, _name, item, links, list;
-              links = $(d.data).find(".group-link");
-              list = (function() {
-                var i, len, results;
-                results = [];
-                for (i = 0, len = links.length; i < len; i++) {
-                  item = links[i];
-                  item = $(item);
-                  _link = item;
-                  _description = item.find("h4[rel=ellipsis]").text();
-                  _name = _description.replace("Full Episodes", "");
-                  _img = item.find(".video-img-wrap img");
-                  results.push({
-                    url: _link.attr('href'),
-                    name: _name,
-                    image: _img.attr("src"),
-                    description: _description
+  app.service("FoodNetwork", [
+    "$http", "$q", "SERVER", "EPISODES", function($http, $q, SERVER, EPISODES) {
+      var service;
+      service = {
+        programs: function() {
+          var deferred;
+          deferred = $q.defer();
+          $http.get(SERVER + EPISODES).then(function(d) {
+            var _item, i, image, item, len, program, programs, ref;
+            programs = [];
+            ref = $(d.data).find(".m-MediaBlock--playlist");
+            for (i = 0, len = ref.length; i < len; i++) {
+              item = ref[i];
+              _item = $(item);
+              image = _item.find("noscript").html().match(/src=\"(.*)\"/)[1];
+              program = {
+                name: _item.find(".m-MediaBlock__a-HeadlineText").html(),
+                url: _item.find(".m-MediaBlock__m-MediaWrap a").attr("href"),
+                image: image
+              };
+              if (program.name) {
+                programs.push(program);
+              }
+            }
+            return deferred.resolve(programs);
+          });
+          return deferred.promise;
+        },
+        episodes: function(url) {
+          var deferred;
+          deferred = $q.defer();
+          $http.get(url).then(function(d) {
+            var data, episode, episodes, video;
+            data = JSON.parse($(d.data).find(".m-VideoPlayer__a-ContainerInner #video-player script")[0].innerText);
+            episodes = (function() {
+              var i, len, ref, results;
+              ref = data.channels[0].videos;
+              results = [];
+              for (i = 0, len = ref.length; i < len; i++) {
+                video = ref[i];
+                results.push(episode = {
+                  name: video.title,
+                  image: SERVER + video.thumbnailUrl,
+                  runtime: video.duration,
+                  smilUrl: video.releaseUrl
+                });
+              }
+              return results;
+            })();
+            return deferred.resolve(episodes);
+          });
+          return deferred.promise;
+        },
+        videos: function(url) {
+          var deferred;
+          deferred = $q.defer();
+          $http.get(url).then(function(d) {
+            var _switch, _video, data, height, heightRe, i, index, j, len, len1, ref, ref1, src, srcRe, video, videos, width, widthRe;
+            videos = [];
+            data = d.data.replace(/video/g, 'replacedvideo');
+            ref = $(data).find("switch");
+            for (index = i = 0, len = ref.length; i < len; index = ++i) {
+              _switch = ref[index];
+              if (index === 0) {
+                ref1 = $(_switch).find("replacedvideo");
+                for (j = 0, len1 = ref1.length; j < len1; j++) {
+                  _video = ref1[j];
+                  srcRe = /src=\"(.+).mp4\"/;
+                  widthRe = /width=\"(\d+)\"/;
+                  heightRe = /height=\"(\d+)\"/;
+                  video = $(_video)[0].outerHTML;
+                  src = srcRe.exec(video)[1];
+                  width = widthRe.exec(video)[1];
+                  height = heightRe.exec(video)[1];
+                  videos.push({
+                    src: src,
+                    width: width,
+                    height: height
                   });
                 }
-                return results;
-              })();
-              return deferred.resolve(list);
-            });
-            return deferred.promise;
-          },
-          episodes: function(program) {
-            var deferred;
-            deferred = $q.defer();
-            $http.get(SERVER + program.url).then((function(_this) {
-              return function(d) {
-                var data, data2, data3, episode, episodes, item, json, scriptText, startIndex, stopIndex;
-                data = $(d.data).find("section#player-component");
-                data2 = data.find("script");
-                data3 = data2[0];
-                scriptText = data3.text;
-                startIndex = scriptText.indexOf("{\"channels\":");
-                scriptText = scriptText.substr(startIndex);
-                stopIndex = scriptText.indexOf("}]}") + 3;
-                scriptText = scriptText.substr(0, stopIndex);
-                console.debug(scriptText);
-                json = JSON.parse(scriptText);
-                console.debug(json);
-                episodes = (function() {
-                  var i, len, ref, results;
-                  ref = json.channels[0].videos;
-                  results = [];
-                  for (i = 0, len = ref.length; i < len; i++) {
-                    item = ref[i];
-                    results.push(episode = {
-                      title: item.title,
-                      description: item.description,
-                      image: item.thumbnailUrl,
-                      duration: item.length_hhmmss,
-                      smil: item.releaseUrl
-                    });
-                  }
-                  return results;
-                })();
-                return deferred.resolve(episodes);
-              };
-            })(this));
-            return deferred.promise;
-          },
-          videos: function(episode) {
-            var deferred;
-            console.debug("Channel.service.videos");
-            console.debug("-- source");
-            console.debug(episode);
-            deferred = $q.defer();
-            $http.get(episode.smil).then(function(d) {
-              var _switch, _video, data, height, heightRe, i, index, j, len, len1, list, ref, ref1, src, srcRe, video, width, widthRe;
-              list = [];
-              data = d.data.replace(/video/g, 'replacedvideo');
-              ref = $(data).find("switch");
-              for (index = i = 0, len = ref.length; i < len; index = ++i) {
-                _switch = ref[index];
-                if (index === 0) {
-                  ref1 = $(_switch).find("replacedvideo");
-                  for (j = 0, len1 = ref1.length; j < len1; j++) {
-                    _video = ref1[j];
-                    srcRe = /src=\"(.+).mp4\"/;
-                    widthRe = /width=\"(\d+)\"/;
-                    heightRe = /height=\"(\d+)\"/;
-                    video = $(_video)[0].outerHTML;
-                    src = srcRe.exec(video)[1];
-                    width = widthRe.exec(video)[1];
-                    height = heightRe.exec(video)[1];
-                    list.push({
-                      src: src,
-                      width: width,
-                      height: height
-                    });
-                  }
-                }
               }
-              return deferred.resolve(list);
-            });
-            return deferred.promise;
-          }
+            }
+            return deferred.resolve(videos);
+          });
+          return deferred.promise;
         }
       };
+      return service;
     }
   ]);
 

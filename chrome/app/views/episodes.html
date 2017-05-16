@@ -1,0 +1,16 @@
+<ng-include src="'app/views/loader.html'"></ng-include>
+
+<div ng-if="!loading" id="episodes">
+  <md-subheader>{{episodes.length}} episodes</md-subheader>
+  
+  <md-list>
+    <md-list-item ng-repeat="episode in episodes" class="md-3-line">
+      <img ng-src="{{episode.image}}" class="md-avatar" />
+      <div class="md-list-item-text">
+        <h2>{{episode.name}}</h2>
+        <h3>{{episode.runtime}}</h3>
+        <videos episode="episode"></videos>
+      </div>
+    </md-list-item>
+  </md-list>
+</div>

@@ -1,5 +1,17 @@
 body { min-width: 500px; min-height: 375px; }
-.pointer, a:hover { cursor: pointer; }
-
-.content { padding: 20px; }   
+.pointer, a:hover { cursor: pointer; text-decoration: underline; }
+img.logo { height: 32px; padding-right: 5px; }
+.md-padding { padding: 16px; }   
 .error { color: red; }
+
+#topbar { position: fixed; width: 100%; z-index: 3; }
+#content { position: relative; top: 64px; }
+
+#programs .md-subheader-inner { padding: 0; }
+#programs .md-subheader-inner md-input-container { margin: 0; padding: 0; width: 100%; }
+#programs .md-subheader.md-padding { padding-bottom: 0; }
+
+#programs md-list-item:not(:last-child) { border-bottom: 1px solid rgba(211,211,211,0.25); padding-top: 8px !important; padding-bottom: 8px !important; }
+#episodes md-list-item:not(:last-child) { border-bottom: 1px solid rgba(211,211,211,0.25); padding-bottom: 8px !important; }
+
+#episodes md-list-item h2 { margin: 0; }

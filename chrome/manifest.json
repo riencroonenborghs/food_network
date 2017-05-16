@@ -3,7 +3,7 @@
 
   "name": "Food Network",
   "description": "Browse & download Food Network's full episodes",
-  "version": "0.2",
+  "version": "0.3",
 
   "browser_action": {
     "default_icon": "app/assets/images/app.png",

@@ -1,6 +1,7 @@
 <md-content>
   <p>Videos</p>
-    <span ng-repeat="video in videos">
+    <md-progress-circular ng-if="loading" class="md-hue-2" md-mode="indeterminate" md-diameter="24px"></md-progress-circular>
+    <span ng-if="!loading" ng-repeat="video in videos">
       <a href="{{video.src}}.mp4">
       {{video.width}}x{{video.height}}      
       </a>

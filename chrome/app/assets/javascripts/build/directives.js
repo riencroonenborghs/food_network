@@ -4,7 +4,26 @@
 
   app = angular.module("foodNetwork.directives", []);
 
-  app.directive("episodeVideos", [
+  app.directive("navbar", [
+    function() {
+      return {
+        restrict: "E",
+        scope: {
+          model: "="
+        },
+        templateUrl: "app/views/navbar.html",
+        controller: [
+          "$scope", "$location", function($scope, $location) {
+            return $scope.go = function(url) {
+              return $location.path(url);
+            };
+          }
+        ]
+      };
+    }
+  ]);
+
+  app.directive("videos", [
     function() {
       return {
         restrict: "E",
@@ -12,12 +31,14 @@
           episode: "="
         },
         transclude: true,
-        templateUrl: "videos.html",
+        templateUrl: "app/views/videos.html",
         controller: [
-          "$scope", "Channel", function($scope, Channel) {
+          "$scope", "FoodNetwork", function($scope, FoodNetwork) {
             $scope.videos = [];
-            return Channel.service.videos($scope.episode).then(function(videos) {
-              return $scope.videos = videos;
+            $scope.loading = true;
+            return FoodNetwork.videos($scope.episode.smilUrl).then(function(data) {
+              $scope.loading = false;
+              return $scope.videos = data;
             });
           }
         ]

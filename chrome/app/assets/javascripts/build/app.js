@@ -2,7 +2,7 @@
 (function() {
   var app;
 
-  app = angular.module("foodNetwork", ["ngAria", "ngAnimate", "ngMaterial", "ngMdIcons", "foodNetwork.controllers", "foodNetwork.directives", "foodNetwork.services"]);
+  app = angular.module("foodNetwork", ["ngAria", "ngAnimate", "ngMaterial", "ngMdIcons", "ngRoute", "foodNetwork.controllers", "foodNetwork.directives", "foodNetwork.services", "foodNetwork.factories"]);
 
   app.config(function($mdThemingProvider) {
     return $mdThemingProvider.theme("default").primaryPalette("red").accentPalette("green");
@@ -11,5 +11,19 @@
   app.constant("SERVER", "http://www.foodnetwork.com");
 
   app.constant("EPISODES", "/videos/players/food-network-full-episodes.vc.html");
+
+  app.config(function($routeProvider, $locationProvider) {
+    $routeProvider.when("/programs", {
+      templateUrl: "app/views/programs.html",
+      controller: "ProgramsController"
+    }).when("/episodes/:name/:url*", {
+      templateUrl: "app/views/episodes.html",
+      controller: "EpisodesController"
+    }).otherwise("/programs", {
+      templateUrl: "app/views/programs.html",
+      controller: "ProgramsController"
+    });
+    return $locationProvider.html5Mode(true);
+  });
 
 }).call(this);
